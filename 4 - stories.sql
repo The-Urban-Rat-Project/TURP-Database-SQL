@@ -1,121 +1,40 @@
 -- This file contains the entities for managing stories in the reminder emails.
+-- TURP 2.5 using WordPress to manage Projects and Stories -----------------------------------------------------
 
 -- Projects ---------------------------------
 
--- Table: public.projects
--- DROP TABLE public.projects;
-CREATE TABLE public.projects
-(
-    id integer NOT NULL DEFAULT nextval('projects_id_seq'::regclass),
-    name character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    abbreviation character varying(10) COLLATE pg_catalog."default" NOT NULL,
-    logo_url character varying(200) COLLATE pg_catalog."default",
-    email_address character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    pin integer NOT NULL,
-    created_at timestamp without time zone NOT NULL DEFAULT now(),
-    enabled boolean NOT NULL DEFAULT true,
-    coordinator_first_name character varying(40) COLLATE pg_catalog."default" NOT NULL,
-    coordinator_last_name character varying(40) COLLATE pg_catalog."default" NOT NULL,
-    coordinator_phone character varying(12) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT projects_pkey PRIMARY KEY (id),
-    CONSTRAINT unq_name UNIQUE (name)
+CREATE TABLE "project_revisions" (
+	"id" INTEGER NOT NULL DEFAULT,
+	"created_at" TIMESTAMP NULL,
+	"project_id" INTEGER NOT NULL,
+	"title" VARCHAR(255) NOT NULL,
+	"content_html" TEXT NOT NULL,
+	"contact" VARCHAR(100) NULL DEFAULT NULL,
+	"contact_email" VARCHAR(100) NOT NULL,
+	"contact_phone" VARCHAR(25) NULL DEFAULT NULL,
+	"website_url" VARCHAR(100) NULL DEFAULT NULL,
+	"facebook_url" VARCHAR(100) NULL DEFAULT NULL,
+	"logo_url" VARCHAR(255) NULL DEFAULT NULL,
+	"current_story_id" INTEGER NULL DEFAULT NULL,
+	PRIMARY KEY ("id")
 )
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
-
-ALTER TABLE public.projects
-    OWNER to database_admin;
-
-GRANT ALL ON TABLE public.projects TO database_admin;
-GRANT ALL ON TABLE public.projects TO PUBLIC;
-
-
--- Table: public.project_postcodes
-
--- DROP TABLE public.project_postcodes;
-
-CREATE TABLE public.project_postcodes
-(
-    project integer NOT NULL,
-    postcode character varying(10) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT fk_project_postcodes_project_id FOREIGN KEY (project)
-        REFERENCES public.projects (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
-)
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
-
-ALTER TABLE public.project_postcodes
-    OWNER to database_admin;
-
-GRANT ALL ON TABLE public.project_postcodes TO database_admin;
-GRANT ALL ON TABLE public.project_postcodes TO PUBLIC;
-
+;
 
 -- Stories ---------------------------------------
 
--- Table: public.stories
-
--- DROP TABLE public.stories;
-
-CREATE TABLE public.stories
-(
-    id integer NOT NULL DEFAULT nextval('stories_id_seq'::regclass),
-    project integer,
-    title character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    text text COLLATE pg_catalog."default" NOT NULL,
-    image_url character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    more_info_url character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    created_at timestamp without time zone NOT NULL DEFAULT now(),
-    CONSTRAINT stories_pkey PRIMARY KEY (id),
-    CONSTRAINT fk_stories_projects FOREIGN KEY (project)
-        REFERENCES public.projects (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE SET NULL
+CREATE TABLE "story_revisions" (
+	"id" INTEGER NOT NULL,
+	"created_at" TIMESTAMP NULL,
+	"project_id" INTEGER NULL DEFAULT NULL,
+	"story_id" INTEGER NOT NULL,
+	"story_title" VARCHAR(255) NOT NULL,
+	"story_content" VARCHAR(255) NOT NULL,
+	"story_url" VARCHAR(255) NULL DEFAULT NULL,
+	"story_image_url" VARCHAR(255) NULL DEFAULT NULL,
+	"permalink" VARCHAR(150) NULL DEFAULT NULL,
+	PRIMARY KEY ("id")
 )
-WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
-
-ALTER TABLE public.stories
-    OWNER to database_admin;
-
-GRANT ALL ON TABLE public.stories TO database_admin;
-GRANT ALL ON TABLE public.stories TO PUBLIC;
-
--- view for the latest stories for every project
-CREATE OR REPLACE VIEW latest_stories AS
-SELECT 
-	s.id,
-	project as project,
-	name AS project_name,
-	title,
-	text,
-	image_url,
-	more_info_url,
-	s.created_at,
-	p.email_address AS project_email_address,
-	logo_url AS project_logo_url
-FROM
-	(
-	SELECT
-		*,
-		RANK() OVER (PARTITION BY project ORDER BY created_at DESC) AS rank
-	FROM 
-		stories
-	) s
-LEFT JOIN
-	projects p ON s.project = p.id
-WHERE
-	s.rank = 1;
-
--- TURP 2.5 using WordPress to manage Projects and Stories -----------------------------------------------------
+;
 	
 -- View with latest revisions of every Project
 CREATE OR REPLACE VIEW latest_project_revisions AS 
@@ -134,28 +53,15 @@ ORDER BY
 -- DROP VIEW latest_story_revisions CASCADE;
 CREATE OR REPLACE VIEW latest_story_revisions AS 
 SELECT 
-	s.id AS revision_id,
-	p.project_id AS project_id,
-	p.title AS project_name,
-	logo_url AS project_logo_url,
-	contact AS project_contact,
-	contact_email AS project_email_address,
-	story_id,
-	story_title AS title,
-	story_content AS text,
-	story_image_url AS image_url,
-	story_url AS more_info_url,
-	s.created_at
-FROM 
-	latest_project_revisions p
-LEFT JOIN (
-	SELECT 
-		DISTINCT ON (project_id)
-		*
-	FROM
-		story_revisions
-	ORDER BY 
-		project_id, 
-		created_at DESC
-) AS s
-ON p.project_id = s.project_id;
+	DISTINCT ON (story_id) id,
+   created_at,
+   project_id,
+   story_id,
+   story_title,
+   story_content,
+	CASE WHEN story_url IS NULL THEN permalink ELSE story_url END AS story_url,
+   story_image_url
+FROM story_revisions
+ORDER BY 
+	story_id, 
+	created_at DESC;
