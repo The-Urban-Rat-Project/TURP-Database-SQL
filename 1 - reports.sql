@@ -2,33 +2,44 @@
 -- FUNCTION: public.normalise_street(character varying)
 
 -- DROP FUNCTION public.normalise_street(character varying);
+-- See https://www.nzpost.co.nz/personal/sending-within-nz/how-to-address-mail/correct-address-formats-envelope-layouts
 
-CREATE OR REPLACE FUNCTION public.normalise_street(
-	address character varying)
-    RETURNS character varying
-    LANGUAGE 'plpgsql'
-
-    COST 100
-    VOLATILE SECURITY DEFINER 
-    ROWS 0
-AS $BODY$
+CREATE OR REPLACE FUNCTION public.normalise_street(address character varying)
+ RETURNS character varying
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
 DECLARE 
 	s character varying;
 BEGIN
 	s := INITCAP($1);
     s := REGEXP_REPLACE(s,'\mAvenue\M', 'Ave' );
-    s := REGEXP_REPLACE(s,'\mCrescent\M', 'Cr' );
+    s := REGEXP_REPLACE(s,'\mClose\M', 'Cl' );
+    s := REGEXP_REPLACE(s,'\mCourt\M', 'Crt' );
+    s := REGEXP_REPLACE(s,'\mCt\M', 'Crt' );
+    s := REGEXP_REPLACE(s,'\mCrescent\M', 'Cres' );
+    s := REGEXP_REPLACE(s,'\mCr\M', 'Cres' );
+    s := REGEXP_REPLACE(s,'\mDrive\M', 'Dr' );
+    s := REGEXP_REPLACE(s,'\mEsplanade\M', 'Esp' );
+    s := REGEXP_REPLACE(s,'\mGrove\M', 'Grv' );
+    s := REGEXP_REPLACE(s,'\mHeights\M', 'Hts' );
+    s := REGEXP_REPLACE(s,'\mHill\M', 'Hl' );
+    s := REGEXP_REPLACE(s,'\mLane\M', 'Ln' );
+    s := REGEXP_REPLACE(s,'\mParade\M', 'Pde' );
+    s := REGEXP_REPLACE(s,'\mPlace\M', 'Pl' );
+    s := REGEXP_REPLACE(s,'\mPlc\M', 'Pl' );
+    s := REGEXP_REPLACE(s,'\mParade\M', 'Pde' );
     s := REGEXP_REPLACE(s,'\mRoad\M', 'Rd' );
     s := REGEXP_REPLACE(s,'\mStreet\M', 'St' );
-    s := REGEXP_REPLACE(s,'\mLane\M', 'Ln' );
+    s := REGEXP_REPLACE(s,'\mSquare\M', 'Sq' );
     s := REGEXP_REPLACE(s,'\mTerrace\M', 'Tce' );
-    s := REGEXP_REPLACE(s,'\mPlace\M', 'Pl' );
-    s := REGEXP_REPLACE(s,'\mParade\M', 'Pde' );
+    s := REGEXP_REPLACE(s,'\mTrc\M', 'Tce' );
+    s := REGEXP_REPLACE(s,'\mQuay\M', 'Qy' );
 
   	RETURN TRIM(s); 
 END
 
-$BODY$;
+$function$
 
 ALTER FUNCTION public.normalise_street(character varying)
     OWNER TO database_admin;

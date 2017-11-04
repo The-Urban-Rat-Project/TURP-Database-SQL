@@ -1,24 +1,21 @@
 
 
 -- FUNCTION: public.is_suspicious_street(character varying)
-/* This returns streets which don't have Rd, St etc. in them. 
-   Note this doesn't work in HeidiSQL, run it in pgAdmin.*/
+/* This returns streets which don't have Rd, St etc. in them, followed only by North, South etc.;
+   and only have letters or a hyphen at the beginning. 
+   Note this doesn't work in HeidiSQL, run it in DBeaver.
+   See https://www.nzpost.co.nz/personal/sending-within-nz/how-to-address-mail/correct-address-formats-envelope-layouts*/
 -- DROP FUNCTION public.is_suspicious_street(character varying);
 
-CREATE OR REPLACE FUNCTION public.is_suspicious_street(
-	street character varying)
-    RETURNS boolean
-    LANGUAGE 'plpgsql'
-
-    COST 100
-    VOLATILE 
-AS $BODY$
+CREATE OR REPLACE FUNCTION public.is_suspicious_street(street character varying)
+ RETURNS boolean
+ LANGUAGE plpgsql
+AS $function$
 BEGIN
-
-	RETURN SUBSTRING(street FROM '[\\w\\s]*(?:Rd|St|Cr|Tce|Ln|Ave|Pl|Pde|Quay)(?: North| South| East| West)?$') IS NULL;
+	RETURN SUBSTRING(street FROM '^[a-zA-Z\s-]+(?:Ave|Cl|Crt|Cres|Dr|Esp|Grv|Hts|Hwy|Hl|Lane|Line|Mall|Pde|Pl|Qy|Rise|Rd|Sq|St|Tce|Way)(?: North| South| East| West)?$') IS null;
 END
 
-$BODY$;
+$function$
 
 ALTER FUNCTION public.is_suspicious_street(character varying)
     OWNER TO database_admin;
