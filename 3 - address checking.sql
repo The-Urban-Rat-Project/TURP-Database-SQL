@@ -7,7 +7,7 @@
    See https://www.nzpost.co.nz/personal/sending-within-nz/how-to-address-mail/correct-address-formats-envelope-layouts*/
 -- DROP FUNCTION public.is_suspicious_street(character varying);
 
-CREATE OR REPLACE FUNCTION public.is_suspicious_street(street character varying)
+CREATE FUNCTION IF NOT EXISTS public.is_suspicious_street(street character varying)
  RETURNS boolean
  LANGUAGE plpgsql
 AS $function$
@@ -26,7 +26,7 @@ ALTER FUNCTION public.is_suspicious_street(character varying)
 
 -- DROP TABLE public.corrected_suspicious_streets;
 
-CREATE TABLE public.corrected_suspicious_streets
+CREATE TABLE IF NOT EXISTS public.corrected_suspicious_streets
 (
     id integer NOT NULL DEFAULT nextval('corrected_suspicious_streets_id_seq'::regclass),
     original_street character varying(80) COLLATE pg_catalog."default" NOT NULL,

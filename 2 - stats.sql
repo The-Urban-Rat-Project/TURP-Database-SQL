@@ -243,7 +243,7 @@ JOIN
 	members_last_reports l ON m.email_address = l.email_address
 ;
 
-SELECT * FROM stats_by_member_latest;
+-- SELECT * FROM stats_by_member_latest;
 
 
 -- composite member, postcode and street stats for all members
@@ -295,37 +295,3 @@ JOIN
 
 
 -- SELECT * FROM members_last_reports;
-
-
-
-/* These were documented later, the actual SQL was not recorded at the time */
-CREATE TABLE stats_history AS SELECT * FROM stats_latest;
-ALTER TABLE stats_history ADD COLUMN date date NOT NULL DEFAULT CURRENT_DATE;
-
-CREATE TABLE stats_by_postcode_history AS SELECT * FROM stats_by_postcode_latest;
-ALTER TABLE stats_by_postcode_history ADD COLUMN date date NOT NULL DEFAULT CURRENT_DATE;
-
-CREATE TABLE stats_by_street_history AS SELECT * FROM stats_by_street_latest;
-ALTER TABLE stats_by_street_history ADD COLUMN date date NOT NULL DEFAULT CURRENT_DATE;
-
--- FUNCTION: public.copy_stats_latest_to_history()
-
--- DROP FUNCTION public.copy_stats_latest_to_history();
-
-CREATE OR REPLACE FUNCTION public.copy_stats_latest_to_history(
-	)
-    RETURNS void
-    LANGUAGE 'sql'
-    COST 100.0
-    VOLATILE SECURITY DEFINER 
-AS $function$
-
-INSERT INTO stats_history SELECT * FROM stats_latest;
-INSERT INTO stats_by_postcode_history SELECT * FROM stats_by_postcode_latest;
-INSERT INTO stats_by_street_history SELECT * FROM stats_by_street_latest;
-
-$function$;
-
-ALTER FUNCTION public.copy_stats_latest_to_history()
-    OWNER TO database_admin;
-

@@ -3,7 +3,7 @@
 
 -- Projects ---------------------------------
 
-CREATE TABLE "project_revisions" (
+CREATE TABLE IF NOT EXISTS "project_revisions" (
 	"id" INTEGER NOT NULL DEFAULT,
 	"created_at" TIMESTAMP NULL,
 	"project_id" INTEGER NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE "project_revisions" (
 
 -- Stories ---------------------------------------
 
-CREATE TABLE "story_revisions" (
+CREATE TABLE IF NOT EXISTS "story_revisions" (
 	"id" INTEGER NOT NULL,
 	"created_at" TIMESTAMP NULL,
 	"project_id" INTEGER NULL DEFAULT NULL,
