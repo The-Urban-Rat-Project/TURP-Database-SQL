@@ -62,12 +62,14 @@ SELECT
 	r.postcode as original_postcode,
 	r.email_address,
 	c.corrected_street,
-	c.corrected_postcode
+	c.corrected_postcode,
+	r.street_number as original_street_number
 FROM reports r
 LEFT JOIN corrected_suspicious_streets c ON r.original_street = c.original_street AND r.postcode = c.original_postcode
 WHERE is_suspicious_street(normalise_street(r.original_street))
 GROUP BY 
 	r.original_street, 
+	r.street_number,
 	r.street, 
 	r.postcode, 
 	r.email_address,
