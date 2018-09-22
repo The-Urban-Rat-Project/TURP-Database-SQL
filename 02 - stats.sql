@@ -1,3 +1,17 @@
+-- create a very basic flat view with some summary statistics over all the reports
+DROP VIEW IF EXISTS summary;
+CREATE VIEW summary AS SELECT 
+	COUNT(*) reports,
+	COUNT(DISTINCT email_address)  users,
+	COUNT(DISTINCT project) projects,
+	COUNT(DISTINCT CONCAT(street,postcode)) streets,
+	COUNT(DISTINCT postcode) postcodes
+FROM
+	reports
+;
+
+-- SELECT * FROM summary;
+
 -- calculate statistics for every street reported on so far
 DROP MATERIALIZED VIEW IF EXISTS stats_by_street_latest;
 CREATE MATERIALIZED VIEW stats_by_street_latest AS SELECT 
