@@ -104,7 +104,7 @@ SELECT
 	r.id, 
 	date,
 	email_address,
-	project,
+	split_part(project,E'\n',1)::varchar AS project, /* first project only */
     street_number,
 	-- apply any correction in table corrected_suspicious_streets
 	CASE WHEN c.original_street IS NOT NULL THEN c.corrected_street ELSE normalise_street(street) END AS street,
@@ -122,7 +122,9 @@ SELECT
 	r.created_at,
 	submission_id,
 	form_id,
-	ip_address	 
+	ip_address,	 
+	project AS projects_text, /* raw text, newline separated */
+	ARRAY [string_to_array(project,E'\n')] AS projects /* array of projects, broken into sub-projects arbitrarily deep */
 FROM report_submissions r
 LEFT JOIN corrected_suspicious_streets c ON r.street = c.original_street AND r.postcode = c.original_postcode;
 
@@ -147,7 +149,9 @@ SELECT
 	bait_checked,
 	bait_taken,
 	bait_added,
-	submitted_at	 
+	submitted_at,
+	projects,
+	projects_text
 FROM
 	reports;
 
@@ -165,7 +169,9 @@ FROM (
 		FIRST_VALUE(date) OVER w AS last_date,
 		FIRST_VALUE(trap_checked) OVER w AS last_trap_checked,
 		FIRST_VALUE(bait_checked) OVER w AS last_bait_checked,
-		FIRST_VALUE(minutes) OVER w AS last_minutes
+		FIRST_VALUE(minutes) OVER w AS last_minutes,
+		FIRST_VALUE(projects) OVER w AS last_projects,
+		FIRST_VALUE(projects_text) OVER w AS last_projects_text
 	FROM 
 		reports
 	WINDOW w AS (
@@ -182,4 +188,14 @@ GROUP BY
 	last_date,
 	last_trap_checked,
 	last_bait_checked,
-	last_minutes;
+	last_minutes,
+	last_projects,
+	last_projects_text;
+	
+-- A version of 'reports' view which also provides the project id for the primary project
+CREATE OR REPLACE VIEW reports_with_project_id AS SELECT 
+  r.*,
+  p.project_id
+FROM reports r
+LEFT JOIN 
+	latest_project_revisions p ON r.project = p.title;
