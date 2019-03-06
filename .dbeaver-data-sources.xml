@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data-sources>
+	<data-source id="postgres-jdbc-168a6005294-2d93f1ad022fb95f" provider="postgresql" driver="postgres-jdbc" name="TURP RDS PostgreSQL" save-password="true" show-system-objects="true" read-only="false">
+		<connection host="turp.c3kviig5suya.us-east-1.rds.amazonaws.com" port="5432" server="" database="turp_dev" url="jdbc:postgresql://turp.c3kviig5suya.us-east-1.rds.amazonaws.com:5432/turp_dev" user="database_admin" password="H0E1eBVhEwIdE2bf" type="prod">
+			<provider-property name="@dbeaver-show-non-default-db@" value="true"/>
+			<provider-property name="@dbeaver-show-template-db@" value="false"/>
+			<provider-property name="@dbeaver-switch-db-on-expand@" value="true"/>
+			<network-handler type="PROXY" id="socks_proxy" enabled="false" save-password="false">
+				<property name="socks-port" value="1080"/>
+			</network-handler>
+			<network-handler type="TUNNEL" id="ssh_tunnel" enabled="false" save-password="false">
+				<property name="sshConnectTimeout" value="10000"/>
+				<property name="authType" value="PASSWORD"/>
+				<property name="port" value="22"/>
+				<property name="implementation" value="jsch"/>
+			</network-handler>
+			<network-handler type="CONFIG" id="postgre_ssl" enabled="false" save-password="false"/>
+			<bootstrap autocommit="true" defaultObject="public"/>
+		</connection>
+		<virtual-meta-data>
+			<container name="model">
+				<container name="turp_dev">
+					<container name="public">
+						<entity name="reports">
+							<constraint name="PRIMARY" type="VIRTUAL KEY">
+								<attribute name="id"/>
+							</constraint>
+						</entity>
+					</container>
+				</container>
+			</container>
+		</virtual-meta-data>
+	</data-source>
+	<filters/>
+</data-sources>
