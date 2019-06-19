@@ -207,6 +207,63 @@ GROUP BY
 REFRESH MATERIALIZED VIEW stats_by_postcode_latest;
 -- SELECT * FROM stats_by_postcode_latest;
 
+DROP VIEW IF EXISTS stats_by_project_month;
+CREATE VIEW stats_by_project_month AS
+SELECT 
+	p.project_id project_id,
+	date_part('YEAR', date)::int AS year, 
+	date_part('month', date)::int AS month, 
+	COUNT(*) reports,
+	SUM(minutes) minutes,
+	COUNT( DISTINCT email_address ) members,
+	COUNT( NULLIF(trap_checked,FALSE) ) trap_checks,
+	COUNT( trap_caught ) trap_catches_total,
+	COUNT( CASE WHEN trap_caught = 'Rat' THEN 1 END) rats,
+	COUNT( CASE WHEN trap_caught = 'Mouse' THEN 1 END) mice,
+	COUNT( CASE WHEN trap_caught = 'Possum' THEN 1 END) possums,
+	COUNT( CASE WHEN trap_caught = 'Hedgehog' THEN 1 END) hedgehogs,
+	COUNT( NULLIF(bait_checked,FALSE) ) bait_checks
+FROM 
+	public.reports r 
+LEFT JOIN 
+	latest_project_revisions p ON r.project = p.title
+GROUP BY 
+	project_id,
+	year, 
+	month 
+ORDER BY 
+	project_id,
+	year DESC, 
+	month DESC;
+--SELECT * FROM stats_by_project_month WHERE project_id = 752;
+
+DROP VIEW IF EXISTS stats_by_project_year;
+CREATE VIEW stats_by_project_year AS
+SELECT 
+	p.project_id project_id,
+	date_part('YEAR', date)::int AS YEAR, 
+	COUNT(*) reports,
+	SUM(minutes) minutes,
+	COUNT( DISTINCT email_address ) members,
+	COUNT( NULLIF(trap_checked,FALSE) ) trap_checks,
+	COUNT( trap_caught ) trap_catches_total,
+	COUNT( CASE WHEN trap_caught = 'Rat' THEN 1 END) rats,
+	COUNT( CASE WHEN trap_caught = 'Mouse' THEN 1 END) mice,
+	COUNT( CASE WHEN trap_caught = 'Possum' THEN 1 END) possums,
+	COUNT( CASE WHEN trap_caught = 'Hedgehog' THEN 1 END) hedgehogs,
+	COUNT( NULLIF(bait_checked,FALSE) ) bait_checks
+FROM 
+	public.reports r 
+LEFT JOIN 
+	latest_project_revisions p ON r.project = p.title
+GROUP BY 
+	project_id,
+	year 
+ORDER BY 
+	project_id,
+	year DESC;
+--SELECT * FROM stats_by_project_year WHERE project_id = 752;
+
 -- calculate statistics for every member who's reported so far
 
 DROP VIEW IF EXISTS stats_by_member_latest CASCADE;
