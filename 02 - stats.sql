@@ -364,5 +364,29 @@ JOIN
 JOIN
 	stats_by_street_latest s ON (m.last_street = s.street AND m.last_postcode = s.postcode);	
 
-
 -- SELECT * FROM members_last_reports;
+
+
+-- Find projects with their top postcode
+
+DROP VIEW IF EXISTS projects_with_top_postcode;
+CREATE VIEW projects_with_top_postcode AS SELECT 
+	p.*, 
+	mode() WITHIN GROUP (ORDER BY r.postcode) top_postcode
+FROM 
+	latest_project_revisions p
+LEFT JOIN 
+	reports r ON r.project = p.title
+GROUP BY 
+	p.id, 
+	p.created_at, 
+	p.project_id, 
+	p.title,
+	p.content_html,
+	p.contact,
+	p.contact_email,
+	p.contact_phone,
+	p.website_url,
+	p.facebook_url,
+	p.logo_url,
+	p.current_story_id;
